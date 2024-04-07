@@ -44,9 +44,44 @@
         let canvas = document.createElement('canvas');
         let context = canvas.getContext('2d');
 
+        // async function turnOnCamera() {
+        // try {
+        //     // Try accessing the environment-facing camera
+        //     const externalConstraints = {
+        //         video: {
+        //             facingMode: { exact: 'environment' } // Specify 'environment' for the back camera
+        //         }
+        //     };
+        //     videoStream = await navigator.mediaDevices.getUserMedia(externalConstraints);
+        //     videoElement.srcObject = videoStream;
+        //     videoElement.style.display = 'block';
+        //     document.querySelector('.later-button').style.display = 'flex'; // Display the buttons
+        //     document.getElementById('turnOffCameraBtn').style.display = 'inline-block'; // Show turnOffCamera button
+        //     document.getElementById('capturePictureBtn').style.display = 'inline-block'; // Show capturePicture button
+        //     document.getElementById('turnOnCameraBtn').style.display = 'none';
+        //     document.getElementById('earth').style.display = 'none';
+        // } catch (error) {
+        //     console.error('Error accessing environment-facing camera:', error);
+        //     try {
+        //         // If accessing environment-facing camera fails, try accessing user-facing camera
+        //         const internalConstraints = {
+        //             video: {
+        //                 facingMode: 'user' // Use the user-facing camera
+        //             }
+        //         };
+        //         videoStream = await navigator.mediaDevices.getUserMedia(internalConstraints);
+        //         videoElement.srcObject = videoStream;
+        //         videoElement.style.display = 'block';
+        //     } catch (error) {
+        //         console.error('Error accessing user-facing camera:', error);
+        //         alert('Could not access the camera. Please make sure it is enabled and try again.');
+        //     }
+        // }
+        
+
         async function turnOnCamera() {
             try {
-                // Try accessing the environment-facing camera
+                // Try accessing the environment-facing camera (back camera)
                 const externalConstraints = {
                     video: {
                         facingMode: { exact: 'environment' } // Specify 'environment' for the back camera
@@ -63,7 +98,7 @@
             } catch (error) {
                 console.error('Error accessing environment-facing camera:', error);
                 try {
-                    // If accessing environment-facing camera fails, try accessing user-facing camera
+                    // If accessing environment-facing camera fails, try accessing user-facing camera (front camera)
                     const internalConstraints = {
                         video: {
                             facingMode: 'user' // Use the user-facing camera
@@ -72,13 +107,17 @@
                     videoStream = await navigator.mediaDevices.getUserMedia(internalConstraints);
                     videoElement.srcObject = videoStream;
                     videoElement.style.display = 'block';
+                    document.querySelector('.later-button').style.display = 'flex'; // Display the buttons
+                    document.getElementById('turnOffCameraBtn').style.display = 'inline-block'; // Show turnOffCamera button
+                    document.getElementById('capturePictureBtn').style.display = 'inline-block'; // Show capturePicture button
+                    document.getElementById('turnOnCameraBtn').style.display = 'none';
+                    document.getElementById('earth').style.display = 'none';
                 } catch (error) {
                     console.error('Error accessing user-facing camera:', error);
                     alert('Could not access the camera. Please make sure it is enabled and try again.');
                 }
             }
         }
-
 
 
         function turnOffCamera() {
