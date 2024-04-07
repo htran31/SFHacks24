@@ -12,6 +12,9 @@
     <button onclick="turnOffCamera()">Turn Off Camera</button>
     <button onclick="capturePicture()">Capture Picture</button>
     <div id="imagePreview"></div>
+    
+    <h1>Results:</h1>
+    <p id="result"></p>
 
     <script>
         let videoStream;
@@ -45,9 +48,20 @@
                 return;
             }
 
+            canvas.width = videoElement.videoWidth;
+            canvas.height = videoElement.videoHeight;
             context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
             const imageData = canvas.toDataURL('image/jpeg');
             displayImage(imageData);
+                // Make an AJAX request to the server
+            fetch('/sendVariable', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ variable: imageData }),
+            });
+            console.log("i am in xhr sending data")
         }
 
         function displayImage(imageData) {
