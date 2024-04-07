@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HomePage</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
 </head>
 
 <body>
@@ -12,7 +15,7 @@
     <button onclick="turnOffCamera()">Turn Off Camera</button>
     <button onclick="capturePicture()">Capture Picture</button>
     <div id="imagePreview"></div>
-    
+
     <h1>Results:</h1>
     <p id="result"></p>
 
@@ -42,7 +45,7 @@
             }
         }
 
-        function capturePicture() {
+        async function capturePicture() {
             if (!videoStream) {
                 alert('Please turn on the camera first.');
                 return;
@@ -52,16 +55,78 @@
             canvas.height = videoElement.videoHeight;
             context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
             const imageData = canvas.toDataURL('image/jpeg');
+            // console.log(imageData);
             displayImage(imageData);
-                // Make an AJAX request to the server
-            fetch('/sendVariable', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ variable: imageData }),
-            });
-            console.log("i am in xhr sending data")
+            const response = await getResponse(imageData);
+            let result = document.getElementById("result");
+            result.innerHTML = response;
+            console.log(response);
+
+            try {
+                const response = await getResponse(imageData);
+                let result = document.getElementById("result");
+
+                // Format response data as string
+                const formattedResult = formatResponse(response);
+
+                // Display formatted result
+                result.innerHTML = formattedResult;
+            } catch (error) {
+                console.error('Error while fetching response:', error);
+            }
+
+
+        }
+
+        function formatResponse(response) {
+            // Extract the content value from the response data
+            const content = response.choices[0]?.message?.content;
+
+            // Return the content value
+            return content || 'No content available';
+        }
+
+        async function getResponse(imgUrl) {
+       
+            try {
+                const response = await axios.post('https://api.fireworks.ai/inference/v1/chat/completions', {
+                    model: "accounts/fireworks/models/firellava-13b",
+                    max_tokens: 512,
+                    top_p: 1,
+                    top_k: 40,
+                    presence_penalty: 0,
+                    frequency_penalty: 0,
+                    temperature: 0.6,
+                    messages: [
+                        {
+                            role: "user",
+                            content: [
+                                {
+                                    type: "text",
+                                    text: "answer in one word what option of this trash object (composed, recycle, landfill, or hazardous-waste)"
+                                },
+                                {
+                                    type: "image_url",
+                                    image_url: {
+                                        url: imgUrl
+                                    }
+
+                                }
+                            ]
+                        }
+                    ]
+                }, {
+                    headers: {
+                        'Accept': "application/json",
+                        'Content-Type': "application/json",
+                        'Authorization': `Bearer S1m4uyIybO6L8SzvTr0j0OHsKIMGj2vPx63jkGOg3K2jzZlp`
+                    }
+                });
+
+                return response.data;
+            } catch (error) {
+                throw error;
+            }
         }
 
         function displayImage(imageData) {
@@ -73,10 +138,8 @@
             imagePreview.innerHTML = ''; // Clear previous content
             imagePreview.appendChild(img);
 
-            const base64Output = document.createElement('p');
-            base64Output.textContent = 'Base64 String: ' + imageData;
-            imagePreview.appendChild(base64Output);
         }
     </script>
 </body>
+
 </html>
