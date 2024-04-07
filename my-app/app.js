@@ -1,9 +1,10 @@
 const express = require('express');
 const axios = require('axios'); 
 const fs = require('fs');
+const path = require('path'); 
 const app = express();
 app.use(express.json());
-
+app.use(express.static(__dirname));
 
 app.get('/', async(req, res) => {
     try {
@@ -15,8 +16,6 @@ app.get('/', async(req, res) => {
         res.send(error);
     }
 });
-
-
 
 
 app.listen(3000, () => {

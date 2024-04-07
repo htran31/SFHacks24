@@ -6,15 +6,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HomePage</title>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <video id="videoFeed" width="50%" height="auto" autoplay style="display: none;"></video>
-    <button onclick="turnOnCamera()">Turn On Camera</button>
-    <button onclick="turnOffCamera()">Turn Off Camera</button>
-    <button onclick="capturePicture()">Capture Picture</button>
-    <div id="imagePreview"></div>
+    <div class="video-section">
+        <button onclick="turnOnCamera()">Turn On Camera</button>
+        <button onclick="turnOffCamera()">Turn Off Camera</button>
+        <button onclick="capturePicture()">Capture Picture</button>
+        <div class="oncamera">
+            <video id="videoFeed" autoplay style="display: none;"></video>
+        </div>
+    </div>
+
+    <div id="popup" class="popup">
+        <div class="popup-content">
+            <span class="close" onclick="closePopup()">&times;</span>
+            <div class="result-section">
+                <h1>Results:</h1>
+                <div class="img-result">
+                    <div id="imagePreview"></div>
+                <p id="content"></p>
+                <p id="result"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <h1>Results:</h1>
     <p id="result"></p>
@@ -27,7 +45,12 @@
 
         async function turnOnCamera() {
             try {
-                videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const constraints = {
+                    video: {
+                        facingMode: { exact: 'environment' } // Specify 'environment' for the back camera
+                    }
+                };
+                videoStream = await navigator.mediaDevices.getUserMedia(constraints);
                 videoElement.srcObject = videoStream;
                 videoElement.style.display = 'block';
             } catch (error) {
@@ -35,6 +58,7 @@
                 alert('Could not access the camera. Please make sure it is enabled and try again.');
             }
         }
+
 
         function turnOffCamera() {
             if (videoStream) {
@@ -45,18 +69,23 @@
             }
         }
 
+
         async function capturePicture() {
+
             if (!videoStream) {
                 alert('Please turn on the camera first.');
                 return;
             }
 
-            canvas.width = videoElement.videoWidth;
-            canvas.height = videoElement.videoHeight;
+
+            document.getElementById('popup').style.display = 'block';
             context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
             const imageData = canvas.toDataURL('image/jpeg');
-            // console.log(imageData);
             displayImage(imageData);
+          
+            const contentParagraph = document.getElementById('content');
+            contentParagraph.textContent = 'Captured Image Data: ' + imageData;
+        
             const response = await getResponse(imageData);
             let result = document.getElementById("result");
             result.innerHTML = response;
@@ -127,18 +156,27 @@
             } catch (error) {
                 throw error;
             }
-        }
+
+
+
 
         function displayImage(imageData) {
             const imagePreview = document.getElementById('imagePreview');
             const img = new Image();
             img.src = imageData;
-            img.style.maxWidth = '50%';
-            img.style.maxHeight = '300px'; // Limit the height for display
+            // img.style.maxWidth = '50%';
+            // img.style.maxHeight = '50%'; // Limit the height for display
             imagePreview.innerHTML = ''; // Clear previous content
             imagePreview.appendChild(img);
+        }
+
+
+
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
 
         }
+
     </script>
 </body>
 
