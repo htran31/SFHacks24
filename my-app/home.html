@@ -11,30 +11,31 @@
 
 <body>
     <div class="video-section">
-        <button onclick="turnOnCamera()">Turn On Camera</button>
-        <button onclick="turnOffCamera()">Turn Off Camera</button>
-        <button onclick="capturePicture()">Capture Picture</button>
+        <h1>EcoScan</h1>
         <div class="oncamera">
             <video id="videoFeed" autoplay style="display: none;"></video>
+
         </div>
+        <div id="earth"><img src="images/earth.gif" alt="EarthImage"></div>
+        <p>* Please scan one object at a time and ensure the picture taken is clear and without blur for the best
+            detection results</p>
+        <div class="later-button" style="display: none;">
+            <button onclick="turnOffCamera()" id="turnOffCameraBtn">CANCEL</button>
+            <button onclick="capturePicture()" id="capturePictureBtn">CHECK</button>
+        </div>
+        <button onclick="turnOnCamera()" id="turnOnCameraBtn">SCAN</button>
     </div>
 
-    <div id="popup" class="popup">
-        <div class="popup-content">
-            <span class="close" onclick="closePopup()">&times;</span>
-            <div class="result-section">
-                <h1>Results:</h1>
-                <div class="img-result">
-                    <div id="imagePreview"></div>
-                    <p id="content"></p>
-                    <p id="result"></p>
-                </div>
-            </div>
+    <div id="popup" class="result-section centered">
+        <div class="result-container">
+            <div class="loading" style="display: none;"><img src="images/load.gif" alt="Loading"></div>
+            <h1>RESULT</h1>
+            <div id="imagePreview"></div>
+            <p id="result"></p>
+            <div><img src="images/result.png" alt="Result" class="imageResult"></div>
+            <button class="close" onclick="closePopup()">Continue</button>
         </div>
     </div>
-
-    <h1>Results:</h1>
-    <p id="result"></p>
 
 
     <script>
@@ -53,6 +54,11 @@
                 videoStream = await navigator.mediaDevices.getUserMedia(constraints);
                 videoElement.srcObject = videoStream;
                 videoElement.style.display = 'block';
+                document.querySelector('.later-button').style.display = 'flex'; // Display the buttons
+                document.getElementById('turnOffCameraBtn').style.display = 'inline-block'; // Show turnOffCamera button
+                document.getElementById('capturePictureBtn').style.display = 'inline-block'; // Show capturePicture button
+                document.getElementById('turnOnCameraBtn').style.display = 'none';
+                document.getElementById('earth').style.display = 'none';
             } catch (error) {
                 console.error('Error accessing camera:', error);
                 alert('Could not access the camera. Please make sure it is enabled and try again.');
@@ -66,6 +72,12 @@
                 tracks.forEach(track => track.stop());
                 videoStream = null;
                 videoElement.style.display = 'none';
+                document.querySelector('.later-button').style.display = 'none';
+                document.getElementById('turnOnCameraBtn').style.display = 'inline-block';
+                document.getElementById('earth').style.display = 'flex';
+                document.getElementById('turnOffCameraBtn').style.display = 'none';
+                document.getElementById('capturePictureBtn').style.display = 'none';
+
             }
         }
 
@@ -75,7 +87,11 @@
                 return;
             }
 
-            document.getElementById('popup').style.display = 'block';
+            document.querySelector('.loading').style.display = 'block';
+
+            document.getElementById('popup').style.display = 'inline-block';
+            document.querySelector('.result-section').style.visibility = 'visible';
+
             context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
             const imageData = canvas.toDataURL('image/jpeg');
             displayImage(imageData);
@@ -86,7 +102,7 @@
             const response = await getResponse(imageData);
             let result = document.getElementById("result");
             result.innerHTML = response;
-            console.log(response);
+            // console.log(response);
 
             try {
                 const response = await getResponse(imageData);
@@ -95,8 +111,30 @@
                 const formattedResult = formatResponse(response);
                 // Display formatted result
                 result.innerHTML = formattedResult;
+
+                // Change background color based on response content
+                const content = response.choices[0]?.message?.content?.toLowerCase(); // Convert to lowercase for case-insensitivity
+                const popupContent = document.querySelector('.result-section');
+                if (content === 'compost') {
+                    popupContent.style.backgroundColor = '#49AD37';
+                } else if (content === 'recycle') {
+                    popupContent.style.backgroundColor = '#2B8AFF';
+                } else if (content === 'landfill') {
+                    popupContent.style.backgroundColor = '#464866';
+                } else if (content === 'hazardous-waste') {
+                    popupContent.style.backgroundColor = '#ff4453';
+                } else {
+                    // Default color if content doesn't match any of the specified values
+                    popupContent.style.backgroundColor = '#fefefe'; // Default color
+                }
             } catch (error) {
                 console.error('Error while fetching response:', error);
+            } finally {
+                // Introduce a delay before hiding the loading image
+                setTimeout(() => {
+                    // Hide loading image after the delay
+                    document.querySelector('.loading').style.display = 'none';
+                }, 2000); // Adjust the delay time as needed (in milliseconds)
             }
         }
 
@@ -161,7 +199,7 @@
 
 
         function closePopup() {
-            document.getElementById('popup').style.display = 'none';
+            document.querySelector('.result-section').style.visibility = 'hidden';
         }
 
     </script>
