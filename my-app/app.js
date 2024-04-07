@@ -73,9 +73,7 @@ app.get('/', async(req, res) => {
     }
 });
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'home.html'));
-});
+
 
 app.listen(3000, () => {
     console.log("Server is listening at 3000");
