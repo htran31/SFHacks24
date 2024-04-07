@@ -1,9 +1,10 @@
 const express = require('express');
 const axios = require('axios'); 
 const fs = require('fs');
+const path = require('path'); 
 const app = express();
 app.use(express.json());
-
+app.use(express.static(__dirname));
 
 async function getResponse() {
     try {
@@ -70,6 +71,10 @@ app.get('/', async(req, res) => {
         console.log(error);
         res.status(500).send(error.message);
     }
+});
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'home.html'));
 });
 
 app.listen(3000, () => {
